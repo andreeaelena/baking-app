@@ -79,16 +79,21 @@ public class RecipeListActivity extends AppCompatActivity {
         recipesCall.enqueue(new Callback<List<Recipe>>() {
             @Override
             public void onResponse(@NonNull Call<List<Recipe>> call, @NonNull Response<List<Recipe>> response) {
-                mLoadingView.setVisibility(View.GONE);
-                mRecipesRecyclerView.setVisibility(View.VISIBLE);
-
                 List<Recipe> recipeList = response.body();
-                MemoryCache.getInstance().setRecipeList(recipeList);
-                mRecipeListAdapter.setData(recipeList);
-                mRecipeListAdapter.notifyDataSetChanged();
+                if (recipeList == null || recipeList.size() == 0) {
+                    mLoadingView.setVisibility(View.GONE);
+                    mNoDataView.setVisibility(View.VISIBLE);
+                } else {
+                    mLoadingView.setVisibility(View.GONE);
+                    mRecipesRecyclerView.setVisibility(View.VISIBLE);
 
-                Intent widgetUpdateIntent = new Intent(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
-                sendBroadcast(widgetUpdateIntent);
+                    MemoryCache.getInstance().setRecipeList(recipeList);
+                    mRecipeListAdapter.setData(recipeList);
+                    mRecipeListAdapter.notifyDataSetChanged();
+
+                    Intent widgetUpdateIntent = new Intent(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+                    sendBroadcast(widgetUpdateIntent);
+                }
             }
 
             @Override

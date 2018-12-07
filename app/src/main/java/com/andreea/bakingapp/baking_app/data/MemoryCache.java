@@ -27,6 +27,7 @@ public class MemoryCache {
     }
 
     public void setRecipeList(List<Recipe> recipeList) {
+        mRecipeList.clear();
         mRecipeList.addAll(recipeList);
     }
 

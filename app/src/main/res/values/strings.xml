@@ -1,10 +1,13 @@
 <resources>
     <string name="app_name">Baking App</string>
     <string name="servings_text">Servings: %d</string>
-    <string name="ingredients">Open app to load recipe ingredients!</string>
+    <string name="ingredients">Ingredients:</string>
     <string name="steps">Steps:</string>
     <string name="recipes_error_message">There was an error loading the recipes.\nPlease try again!</string>
     <string name="retry">Retry</string>
     <string name="add_widget">Add widget</string>
-
+    <string name="appwidget_text">EXAMPLE</string>
+    <string name="configure">Configure</string>
+    <string name="choose_recipe_for_widget">Choose a recipe to disply its ingredients:</string>
+    <string name="open_app">Open app to load the recipes and try again!</string>
 </resources>

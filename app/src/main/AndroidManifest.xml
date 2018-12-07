@@ -44,6 +44,12 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/recipe_ingredients_widget_info" />
         </receiver>
+
+        <activity android:name=".widget.RecipeIngredientsWidgetConfigureActivity">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>

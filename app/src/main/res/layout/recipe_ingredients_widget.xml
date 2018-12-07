@@ -12,7 +12,7 @@
         android:textStyle="bold"
         android:textColor="@color/white"
         android:textSize="18sp"
-        android:text="@string/ingredients"/>
+        android:text="@string/open_app"/>
 
     <TextView
         android:id="@+id/appwidget_ingredients_text"

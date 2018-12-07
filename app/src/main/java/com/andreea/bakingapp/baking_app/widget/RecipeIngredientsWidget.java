@@ -1,6 +1,5 @@
 package com.andreea.bakingapp.baking_app.widget;
 
-import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
@@ -12,17 +11,15 @@ import com.andreea.bakingapp.baking_app.R;
 import com.andreea.bakingapp.baking_app.data.MemoryCache;
 import com.andreea.bakingapp.baking_app.model.Recipe;
 
-import java.util.List;
-
 /**
  * Implementation of App Widget functionality.
  */
 public class RecipeIngredientsWidget extends AppWidgetProvider {
 
-    static void updateAppWidget(Context context,
-                                AppWidgetManager appWidgetManager,
-                                int appWidgetId,
-                                Recipe recipe) {
+    public static void updateAppWidget(Context context, AppWidgetManager appWidgetManager, int appWidgetId) {
+
+        int recipeId = RecipeIngredientsWidgetConfigureActivity.loadRecipeIdPref(context, appWidgetId);
+        Recipe recipe = MemoryCache.getInstance().getRecipe(recipeId);
         if (recipe != null) {
             // Construct the RemoteViews object
             RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.recipe_ingredients_widget);
@@ -38,7 +35,15 @@ public class RecipeIngredientsWidget extends AppWidgetProvider {
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
         // There may be multiple widgets active, so update all of them
         for (int appWidgetId : appWidgetIds) {
-            updateAppWidget(context, appWidgetManager, appWidgetId, getFirstRecipe());
+            updateAppWidget(context, appWidgetManager, appWidgetId);
+        }
+    }
+
+    @Override
+    public void onDeleted(Context context, int[] appWidgetIds) {
+        // When the user deletes the widget, delete the preference associated with it.
+        for (int appWidgetId : appWidgetIds) {
+            RecipeIngredientsWidgetConfigureActivity.deleteRecipeIdPref(context, appWidgetId);
         }
     }
 
@@ -49,21 +54,9 @@ public class RecipeIngredientsWidget extends AppWidgetProvider {
             AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
             int[] appWidgetIds = appWidgetManager.getAppWidgetIds(new ComponentName(context, RecipeIngredientsWidget.class));
             for (int appWidgetId : appWidgetIds) {
-                updateAppWidget(context, appWidgetManager, appWidgetId, getFirstRecipe());
+                updateAppWidget(context, appWidgetManager, appWidgetId);
             }
         }
-    }
-
-    private Recipe getFirstRecipe() {
-        List<Recipe> recipeList = MemoryCache.getInstance().getRecipeList();
-        if (recipeList == null || recipeList.size() == 0) {
-            return null;
-        }
-        Recipe recipe = recipeList.get(0);
-        if (recipe == null) {
-            return null;
-        }
-        return recipe;
     }
 
     @Override

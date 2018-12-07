@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.andreea.bakingapp.baking_app">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -9,7 +11,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".RecipeListActivity">
+        <activity android:name=".activity.RecipeListActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -17,23 +19,31 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".RecipeStepListActivity"
-            android:label="@string/title_recipestep_list"
-            android:parentActivityName=".RecipeListActivity"
+            android:name=".activity.RecipeStepListActivity"
+            android:parentActivityName=".activity.RecipeListActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.andreea.bakingapp.baking_app.RecipeListActivity" />
+                android:value="com.andreea.bakingapp.baking_app.activity.RecipeListActivity" />
         </activity>
         <activity
-            android:name=".RecipeStepDetailActivity"
-            android:label="@string/title_recipestep_detail"
-            android:parentActivityName=".RecipeStepListActivity"
+            android:name=".activity.RecipeStepDetailActivity"
+            android:parentActivityName=".activity.RecipeStepListActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.andreea.bakingapp.baking_app.RecipeStepListActivity" />
+                android:value="com.andreea.bakingapp.baking_app.activity.RecipeStepListActivity" />
         </activity>
+
+        <receiver android:name=".widget.RecipeIngredientsWidget">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/recipe_ingredients_widget_info" />
+        </receiver>
     </application>
 
 </manifest>

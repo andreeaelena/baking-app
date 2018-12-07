@@ -1,0 +1,9 @@
+<resources>
+
+    <style name="RecipeStepVideoStyle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">320dp</item>
+        <item name="resize_mode">fixed_height</item>
+    </style>
+
+</resources>

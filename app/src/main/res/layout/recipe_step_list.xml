@@ -6,8 +6,7 @@
     android:name="com.andreea.bakingapp.baking_app.RecipeStepListFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_marginLeft="16dp"
-    android:layout_marginRight="16dp"
+    android:background="@color/blue_grey_50"
     app:layoutManager="LinearLayoutManager"
-    tools:context=".RecipeStepListActivity"
-    tools:listitem="@layout/recipestep_list_content" />
+    tools:context=".activity.RecipeStepListActivity"
+    tools:listitem="@layout/recipe_step_item" />

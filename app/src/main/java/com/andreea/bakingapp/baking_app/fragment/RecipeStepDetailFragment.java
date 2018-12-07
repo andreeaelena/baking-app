@@ -3,6 +3,7 @@ package com.andreea.bakingapp.baking_app.fragment;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -26,6 +27,10 @@ import com.google.android.exoplayer2.util.Util;
 
 import java.util.Objects;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.Unbinder;
+
 import static com.andreea.bakingapp.baking_app.Constants.Extra.PLAYER_CURRENT_POSITION;
 import static com.andreea.bakingapp.baking_app.Constants.Extra.RECIPE_ID;
 import static com.andreea.bakingapp.baking_app.Constants.Extra.RECIPE_STEP_ID;
@@ -38,13 +43,13 @@ import static com.andreea.bakingapp.baking_app.Constants.Extra.RECIPE_STEP_ID;
  */
 public class RecipeStepDetailFragment extends Fragment {
 
-    /**
-     * The dummy content this fragment is presenting.
-     */
-    private Step mRecipeStep;
+    @BindView(R.id.recipe_step_video) PlayerView mStepVideoView;
+    @BindView(R.id.recipe_step_detail) TextView mStepDetailView;
 
+    private Unbinder mButterknifeUnbinder;
     private SimpleExoPlayer mPlayer;
     private long mPlayerCurrentPosition = 0;
+    private Step mRecipeStep;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -57,8 +62,9 @@ public class RecipeStepDetailFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        assert getArguments() != null;
-        if (getArguments().containsKey(RECIPE_ID) && getArguments().containsKey(RECIPE_STEP_ID)) {
+        if (getArguments() != null
+                && getArguments().containsKey(RECIPE_ID)
+                && getArguments().containsKey(RECIPE_STEP_ID)) {
             mRecipeStep = MemoryCache.getInstance().getRecipeStep(
                     getArguments().getInt(RECIPE_ID),
                     getArguments().getInt(RECIPE_STEP_ID));
@@ -67,53 +73,105 @@ public class RecipeStepDetailFragment extends Fragment {
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.recipe_step_detail, container, false);
-
-        // The ExoPlayer's initial seek position is 0 by default or the last saved position.
-        if (savedInstanceState != null) {
-            mPlayerCurrentPosition = savedInstanceState.getLong(PLAYER_CURRENT_POSITION);
-        }
+        View view = inflater.inflate(R.layout.recipe_step_detail, container, false);
+        mButterknifeUnbinder = ButterKnife.bind(this, view);
 
         if (mRecipeStep != null) {
-            PlayerView stepVideoView = rootView.findViewById(R.id.recipe_step_video);
-            TextView stepDetailView = rootView.findViewById(R.id.recipe_step_detail);
-
-            // Setup the video:
-            String videoURLString = mRecipeStep.getVideoURL();
-            if (!TextUtils.isEmpty(videoURLString)) {
-                mPlayer = ExoPlayerFactory.newSimpleInstance(getContext());
-                stepVideoView.setPlayer(mPlayer);
-                setupVideoPlayer(mPlayer, Uri.parse(mRecipeStep.getVideoURL()));
-            } else {
-                stepVideoView.setVisibility(View.GONE);
-            }
-
             // Setup the step description:
             boolean isPhoneLandscape = getResources().getBoolean(R.bool.is_phone_landscape);
-            stepDetailView.setText(mRecipeStep.getDescription());
-            stepDetailView.setVisibility(isPhoneLandscape && !TextUtils.isEmpty(videoURLString)
+            mStepDetailView.setText(mRecipeStep.getDescription());
+            mStepDetailView.setVisibility(isPhoneLandscape && !TextUtils.isEmpty(mRecipeStep.getVideoURL())
                     ? View.GONE : View.VISIBLE);
         }
 
-        return rootView;
+        return view;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        if (Util.SDK_INT > 23) {
+            initializePlayer();
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (Util.SDK_INT <= 23 || mPlayer == null) {
+            initializePlayer();
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (Util.SDK_INT <= 23) {
+            releasePlayer();
+        }
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (Util.SDK_INT > 23) {
+            releasePlayer();
+        }
     }
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         if (mPlayer != null) {
-            outState.putLong(PLAYER_CURRENT_POSITION, mPlayer.getCurrentPosition());
-            mPlayer.stop(true);
+            mPlayerCurrentPosition = mPlayer.getCurrentPosition();
+            outState.putLong(PLAYER_CURRENT_POSITION, mPlayerCurrentPosition);
+
         }
     }
 
-    private void setupVideoPlayer(SimpleExoPlayer player, Uri mp4VideoUri) {
-        DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(
-                Objects.requireNonNull(getContext()),
-                Util.getUserAgent(getContext(),getString(R.string.app_name)));
-        MediaSource videoSource = new ExtractorMediaSource.Factory(
-                dataSourceFactory).createMediaSource(mp4VideoUri);
-        player.prepare(videoSource);
-        player.seekTo(mPlayerCurrentPosition);
+    @Override
+    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
+        super.onViewStateRestored(savedInstanceState);
+        // The ExoPlayer's initial seek position is 0 by default or the last saved position.
+        if (savedInstanceState != null) {
+            mPlayerCurrentPosition = savedInstanceState.getLong(PLAYER_CURRENT_POSITION);
+        }
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        // Unbind the views:
+        mButterknifeUnbinder.unbind();
+    }
+
+    /**
+     * Initialize the ExoPlayer.
+     */
+    private void initializePlayer() {
+        String videoURLString = mRecipeStep.getVideoURL();
+        if (!TextUtils.isEmpty(videoURLString)) {
+            mPlayer = ExoPlayerFactory.newSimpleInstance(getContext());
+            mStepVideoView.setPlayer(mPlayer);
+            DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(
+                    Objects.requireNonNull(getContext()),
+                    Util.getUserAgent(getContext(),getString(R.string.app_name)));
+            MediaSource videoSource = new ExtractorMediaSource.Factory(
+                    dataSourceFactory).createMediaSource(Uri.parse(mRecipeStep.getVideoURL()));
+            mPlayer.prepare(videoSource);
+            mPlayer.seekTo(mPlayerCurrentPosition);
+        } else {
+            mStepVideoView.setVisibility(View.GONE);
+        }
+    }
+
+    /**
+     * Stop and release the ExoPlayer.
+     */
+    private void releasePlayer() {
+        if (mPlayer != null) {
+            mPlayer.stop(true);
+            mPlayer.release();
+        }
     }
 }
